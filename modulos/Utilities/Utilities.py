@@ -16,6 +16,7 @@ def process(nombre_fichero,header1,header2,header3,lista_a_procesar):
     wb.save(filepath)
     
 def crear_objetos_compra():
+    xw.App(visible=False)
     lista_compra = []
     path="Documentos/facturas/compras/compras.xlsx"
     book=xw.Book(path)
@@ -26,17 +27,21 @@ def crear_objetos_compra():
         #print(datos[i][0].strftime("%m/%d/%Y"), datos[i][4], datos[i][5] )
         compra=Compra(datos[i][0].strftime("%m/%d/%Y"), datos[i][4], datos[i][5])
         lista_compra.append(compra)
+    xw.App().quit()
     return lista_compra
         
 def crear_objetos_venta():
+    xw.App(visible=False)
     lista_ventas = []
     dir_path="Documentos/facturas/ventas"
     for path in os.listdir(dir_path): 
         book=xw.Book(os.path.join(dir_path,path))
         sheet=xw.sheets['factura']
-        fecha=sheet['H3']
-        iva=sheet['F48']
-        total=sheet['F47']
+        fecha=sheet['H3'].value.strftime("%d/%m/%Y")
+        iva=sheet['F48'].value
+        total=sheet['F47'].value
         venta=Venta(fecha, iva, total)
         lista_ventas.append(venta)
+        #print(fecha, iva, total)
+        xw.App().quit()
     return lista_ventas

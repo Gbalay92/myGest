@@ -2,6 +2,8 @@ from modulos.models.Transaccion import Compra, Venta
 import openpyxl as op
 import xlwings as xw
 import os
+import formulas
+from datetime import datetime, timedelta
 
 
 def process(nombre_fichero,header1,header2,header3,lista_a_procesar):
@@ -16,19 +18,24 @@ def process(nombre_fichero,header1,header2,header3,lista_a_procesar):
     wb.save(filepath)
     
 def crear_objetos_compra():
-    xw.App(visible=False)
     lista_compra = []
-    path="Documentos/facturas/compras/compras.xlsx"
-    book=xw.Book(path)
-    sheet=xw.sheets['T3-2022']
-    datos = sheet["A3"].expand().value
-    # print(len(datos))
-    for i in range(0,len(datos)):
-        #print(datos[i][0].strftime("%m/%d/%Y"), datos[i][4], datos[i][5] )
-        compra=Compra(datos[i][0].strftime("%m/%d/%Y"), datos[i][4], datos[i][5])
-        lista_compra.append(compra)
-    xw.App().quit()
+    path="Documentos/facturas/compras"
+    filename="compras.xlsx"
+    xl_model=formulas.ExcelModel().loads(os.path.join(path,filename)).finish()
+    solution=xl_model.calculate()
+    row=3
+    for i in solution:
+        cell_ref_fecha=f"'[{filename}]T3-2022'!A{row}"
+        cell_ref_total=f"'[{filename}]T3-2022'!E{row}"
+        cell_ref_iva=f"'[{filename}]T3-2022'!F{row}"
+        fecha=solution.get(cell_ref_fecha).values[cell_ref_fecha]
+        for f in fecha:
+            if str(type(f))=="<class 'numpy.ndarray'>":
+                print(xldate_to_datetime(f[0][0]).strftime("%d/%m/%Y"))
+        row+=1
     return lista_compra
+
+
         
 def crear_objetos_venta():
     xw.App(visible=False)
@@ -45,3 +52,8 @@ def crear_objetos_venta():
         #print(fecha, iva, total)
         xw.App().quit()
     return lista_ventas
+
+def xldate_to_datetime(xldate):
+	temp = datetime(1899, 12, 30)
+	delta = timedelta(days=xldate)
+	return temp+delta

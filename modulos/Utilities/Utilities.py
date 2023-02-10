@@ -28,11 +28,16 @@ def crear_objetos_compra():
         cell_ref_fecha=f"'[{filename}]T3-2022'!A{row}"
         cell_ref_total=f"'[{filename}]T3-2022'!E{row}"
         cell_ref_iva=f"'[{filename}]T3-2022'!F{row}"
-        fecha=solution.get(cell_ref_fecha).values[cell_ref_fecha]
-        for f in fecha:
-            if str(type(f))=="<class 'numpy.ndarray'>":
-                print(xldate_to_datetime(f[0][0]).strftime("%d/%m/%Y"))
-        row+=1
+        try:
+            fecha=solution.get(cell_ref_fecha).values[cell_ref_fecha]
+            total=solution.get(cell_ref_total).values[cell_ref_total]
+            iva=solution.get(cell_ref_iva).values[cell_ref_iva]
+            for f in fecha:
+                if str(type(f))=="<class 'numpy.ndarray'>":
+                    lista_compra.append(Compra(xldate_to_datetime(f[0][0]).strftime("%d/%m/%Y"), iva[-1][0][0], total[-1][0][0]))
+            row+=1
+        except AttributeError:
+            break
     return lista_compra
 
 

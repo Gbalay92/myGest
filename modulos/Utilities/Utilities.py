@@ -4,6 +4,18 @@ import os
 import formulas
 from datetime import datetime, timedelta
 
+dict_cell_gerencia = {"1":"D",
+                    2:"E",
+                    3:"F",
+                    4:"G",
+                    5:"H",
+                    6:"I",
+                    7:"J",
+                    8:"K",
+                    9:"L",
+                    10:"M",
+                    11:"N",
+                    12:"O",}
 
 def process(nombre_fichero,header1,header2,header3,lista_a_procesar):
     filepath = "Documentos/facturas/"+nombre_fichero+".xlsx"
@@ -24,10 +36,10 @@ def crear_objetos_compra():
     solution=xl_model.calculate()
     row=3
     for i in solution:
-        cell_ref_fecha=f"'[{filename}]T3-2022'!A{row}"
-        cell_ref_total=f"'[{filename}]T3-2022'!E{row}"
-        cell_ref_iva=f"'[{filename}]T3-2022'!F{row}"
         try:
+            cell_ref_fecha=f"'[{filename}]T3-2022'!A{row}"
+            cell_ref_total=f"'[{filename}]T3-2022'!E{row}"
+            cell_ref_iva=f"'[{filename}]T3-2022'!F{row}"
             fecha=solution.get(cell_ref_fecha).values[cell_ref_fecha]
             total=solution.get(cell_ref_total).values[cell_ref_total]
             iva=solution.get(cell_ref_iva).values[cell_ref_iva]
@@ -72,3 +84,22 @@ def write_gerencia(cantidad, celda):
     ws=wb.active
     ws[f'{celda}']=cantidad
     wb.save(file)
+    
+    
+
+def process_gasto_nomina():
+    dir="Documentos/nominas"
+    for folder in os.listdir(dir):
+        dir_path = os.path.join(dir,folder)
+        if(dir_path.endswith("xlsx")):
+            return
+        gasto_mes=0
+        mes, anho=folder.split("-")
+        for path in os.listdir(dir_path): 
+            cell_ref=f"'[{path}]NOMINA2'!F54"
+            xl_model=formulas.ExcelModel().loads(os.path.join(dir_path,path)).finish()
+            solution=xl_model.calculate()
+            values=solution.get(cell_ref).values[cell_ref]
+            gasto_mes+=values[-1][0][0]
+        if(len(os.listdir(dir_path))>0):
+            write_gerencia(gasto_mes,dict_cell_gerencia.get(mes)+str(3))

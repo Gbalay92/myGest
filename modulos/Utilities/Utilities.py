@@ -100,6 +100,7 @@ def crear_objetos_venta():
         gasto_mes=total[-1][0][0]
         f=fecha[-1][0][0]
         i=iva[-1][0][0]
+        print(xldate_to_datetime(f))
         lista_ventas.append(Venta(xldate_to_datetime(f).strftime("%d/%m/%Y") , i, gasto_mes))
         
         #lista_ventas.append(Venta(fecha, iva, total))

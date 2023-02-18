@@ -1,8 +1,11 @@
 from modulos.models.Transaccion import Compra, Venta
 import openpyxl as op
 import os
+import shutil as sh
 import formulas
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date as dt
+from dateutil.relativedelta import relativedelta
+
 
 dict_cell_gerencia = {1:"D",
                     2:"E",
@@ -29,21 +32,41 @@ dict_cell_iva =  {1:"C",
                     10:"O",
                     11:"P",
                     12:"Q",}
+
 def get_cell_value(solution, file, sheet, cell):
     cell_ref=f"'[{file}]{sheet}'!{cell}"
-    return solution.get(cell_ref).values[cell]
-    
+    return solution.get(cell_ref).values[cell_ref]
 
-def process_transactions(nombre_fichero,header1,header2,header3,lista_a_procesar):
-    filepath = "Documentos/facturas/"+nombre_fichero+".xlsx"
-    wb = op.Workbook()
-    ws=wb.active
-    ws['A1']=header1
-    ws['B1']=header2
-    ws['C1']=header3
-    for element in lista_a_procesar:
-        ws.append([element.fecha,element.iva,element.total_sin_iva])
-    wb.save(filepath)
+def xldate_to_datetime(xldate):
+	temp = datetime(1899, 12, 30)
+	delta = timedelta(days=xldate)
+	return temp+delta
+
+
+def create_payroll():
+    original="Documentos/nominas/nomina-11223344.xlsx"
+    wb=op.load_workbook("Documentos/rrhh/empregados.xlsx")
+    categorias=wb['taboas Salariais']
+    empleados=wb['empregados']
+    dict_categorias={}
+    for row in categorias.iter_rows(min_row=2, max_col=2):
+        dict_categorias[row[0].value] = row[1].value    
+    for row in empleados.iter_rows(min_row=2, max_col=4):
+        folder="Documentos/nominas/"+str(datetime.now().month)+"-"+str(datetime.now().year)+"/"
+        os.makedirs(os.path.dirname(folder), exist_ok=True)
+        fichero=folder+"/"+ row[0].value.replace(" ", "")+str(datetime.now().month)+"-"+str(datetime.now().year)+".xlsx"
+        sh.copy(original, fichero)
+        wb=op.load_workbook(fichero)
+        ws=wb.active
+        ws['C8']=str(dt.today().replace(day=1).strftime("%d/%m/%Y"))
+        ws['D8']=str((dt.today() + relativedelta(day=31)).strftime("%d/%m/%Y"))
+        ws['E2']=row[0].value
+        ws['F5']=row[1].value
+        ws['B38']=row[2].value
+        ws['F15']=row[3].value
+        ws['F11']=dict_categorias[row[1].value]
+        wb.save(fichero)
+    
     
 def crear_objetos_compra():
     lista_compras = []
@@ -82,10 +105,16 @@ def crear_objetos_venta():
         #lista_ventas.append(Venta(fecha, iva, total))
     return lista_ventas
 
-def xldate_to_datetime(xldate):
-	temp = datetime(1899, 12, 30)
-	delta = timedelta(days=xldate)
-	return temp+delta
+def process_transactions(nombre_fichero,header1,header2,header3,lista_a_procesar):
+    filepath = "Documentos/facturas/"+nombre_fichero+".xlsx"
+    wb = op.Workbook()
+    ws=wb.active
+    ws['A1']=header1
+    ws['B1']=header2
+    ws['C1']=header3
+    for element in lista_a_procesar:
+        ws.append([element.fecha,element.iva,element.total_sin_iva])
+    wb.save(filepath)
 
 def write_reports(cantidad, celda, filepath):
     wb = op.load_workbook(filepath)
@@ -107,7 +136,6 @@ def process_gasto_nomina(dict):
             values=get_cell_value(solution,path,"NOMINA2","F54")
             gasto_mes+=values[-1][0][0]
         if(len(os.listdir(dir_path))>0):
-            print(mes)
             write_reports(gasto_mes,dict.get(int(mes))+str(3), "Documentos/gerencia/informe-xerencia.xlsx")
             
 def process_report(file_origin, row_destiny,row_orign, file_destiny, dict):

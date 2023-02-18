@@ -149,6 +149,5 @@ def process_report(file_origin, row_destiny,row_orign, file_destiny, dict):
         if date != previous_date and previous_date != None:
             write_reports(total, dict.get(date)+str(4), file_destiny)
         previous_date=date
-    write_reports(total, dict.get(date)+str(row_destiny
-), file_destiny)
+    write_reports(total, dict.get(date)+str(row_destiny), file_destiny)
         

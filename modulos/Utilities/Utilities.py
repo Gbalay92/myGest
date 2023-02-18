@@ -4,7 +4,7 @@ import os
 import formulas
 from datetime import datetime, timedelta
 
-dict_cell_gerencia = {"1":"D",
+dict_cell_gerencia = {1:"D",
                     2:"E",
                     3:"F",
                     4:"G",
@@ -50,8 +50,6 @@ def crear_objetos_compra():
         except AttributeError:
             break
     return lista_compras
-
-
         
 def crear_objetos_venta():
     lista_ventas = []
@@ -84,8 +82,6 @@ def write_gerencia(cantidad, celda):
     ws=wb.active
     ws[f'{celda}']=cantidad
     wb.save(file)
-    
-    
 
 def process_gasto_nomina():
     dir="Documentos/nominas"
@@ -102,4 +98,19 @@ def process_gasto_nomina():
             values=solution.get(cell_ref).values[cell_ref]
             gasto_mes+=values[-1][0][0]
         if(len(os.listdir(dir_path))>0):
-            write_gerencia(gasto_mes,dict_cell_gerencia.get(mes)+str(3))
+            print(mes)
+            write_gerencia(gasto_mes,dict_cell_gerencia.get(int(mes))+str(3))
+            
+def process_report(filename, row_number):
+    wb=op.load_workbook(filename)
+    ws=wb.active
+    previous_date=None
+    total=0
+    for row in ws.iter_rows(min_row=2):
+        total+=row[2].value
+        date=datetime.strptime(row[0].value,"%d/%m/%Y").month
+        if date != previous_date and previous_date != None:
+            write_gerencia(total, dict_cell_gerencia.get(date)+str(4))
+        previous_date=date
+    write_gerencia(total, dict_cell_gerencia.get(date)+str(row_number))
+        

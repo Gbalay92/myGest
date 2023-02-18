@@ -1,7 +1,7 @@
-from modulos.Utilities.Utilities import process_gasto_nomina,process_report
+from modulos.Utilities.Utilities import process_gasto_nomina,process_report, dict_cell_gerencia
 
 
 if __name__=="__main__":
-    process_gasto_nomina()
-    process_report("Documentos/facturas/compras_procesadas.xlsx", 4, "Documentos/gerencia/informe-xerencia.xlsx")
-    process_report("Documentos/facturas/ventas_procesadas.xlsx", 10, "Documentos/gerencia/informe-xerencia.xlsx")
+    process_gasto_nomina(dict_cell_gerencia)
+    process_report("Documentos/facturas/compras_procesadas.xlsx", 4, 2, "Documentos/gerencia/informe-xerencia.xlsx",dict_cell_gerencia)
+    process_report("Documentos/facturas/ventas_procesadas.xlsx", 10, 2, "Documentos/gerencia/informe-xerencia.xlsx", dict_cell_gerencia)

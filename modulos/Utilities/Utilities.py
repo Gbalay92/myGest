@@ -16,6 +16,7 @@ dict_cell_gerencia = {1:"D",
                     10:"M",
                     11:"N",
                     12:"O",}
+
 dict_cell_iva =  {1:"C",
                     2:"D",
                     3:"E",
@@ -33,7 +34,7 @@ def get_cell_value(solution, file, sheet, cell):
     return solution.get(cell_ref).values[cell]
     
 
-def process(nombre_fichero,header1,header2,header3,lista_a_procesar):
+def process_transactions(nombre_fichero,header1,header2,header3,lista_a_procesar):
     filepath = "Documentos/facturas/"+nombre_fichero+".xlsx"
     wb = op.Workbook()
     ws=wb.active
@@ -92,7 +93,7 @@ def write_reports(cantidad, celda, filepath):
     ws[f'{celda}']=cantidad
     wb.save(filepath)
 
-def process_gasto_nomina():
+def process_gasto_nomina(dict):
     directory="Documentos/nominas"
     for folder in os.listdir(directory):
         dir_path = os.path.join(directory,folder)
@@ -107,18 +108,19 @@ def process_gasto_nomina():
             gasto_mes+=values[-1][0][0]
         if(len(os.listdir(dir_path))>0):
             print(mes)
-            write_reports(gasto_mes,dict_cell_gerencia.get(int(mes))+str(3), "Documentos/gerencia/informe-xerencia.xlsx")
+            write_reports(gasto_mes,dict.get(int(mes))+str(3), "Documentos/gerencia/informe-xerencia.xlsx")
             
-def process_report(file_origin, row_number, file_destiny):
+def process_report(file_origin, row_destiny,row_orign, file_destiny, dict):
     wb=op.load_workbook(file_origin)
     ws=wb.active
     previous_date=None
     total=0
     for row in ws.iter_rows(min_row=2):
-        total+=row[2].value
+        total+=row[row_orign].value
         date=datetime.strptime(row[0].value,"%d/%m/%Y").month
         if date != previous_date and previous_date != None:
-            write_reports(total, dict_cell_gerencia.get(date)+str(4), file_destiny)
+            write_reports(total, dict.get(date)+str(4), file_destiny)
         previous_date=date
-    write_reports(total, dict_cell_gerencia.get(date)+str(row_number), file_destiny)
+    write_reports(total, dict.get(date)+str(row_destiny
+), file_destiny)
         

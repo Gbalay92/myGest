@@ -5,8 +5,7 @@ class Transaccion():
         self.total_sin_iva = total_sin_iva
         
 class Compra(Transaccion):
-    def calcular_total_gasto(self):
-        return self.iva+self.total_sin_iva
+    pass
 
 class Venta(Transaccion):
     pass

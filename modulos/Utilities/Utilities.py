@@ -28,6 +28,10 @@ dict_cell_iva =  {1:"C",
                     10:"O",
                     11:"P",
                     12:"Q",}
+def get_cell_value(solution, file, sheet, cell):
+    cell_ref=f"'[{file}]{sheet}'!{cell}"
+    return solution.get(cell_ref).values[cell]
+    
 
 def process(nombre_fichero,header1,header2,header3,lista_a_procesar):
     filepath = "Documentos/facturas/"+nombre_fichero+".xlsx"
@@ -49,12 +53,9 @@ def crear_objetos_compra():
     row=3
     for i in solution:
         try:
-            cell_ref_fecha=f"'[{filename}]T3-2022'!A{row}"
-            cell_ref_total=f"'[{filename}]T3-2022'!E{row}"
-            cell_ref_iva=f"'[{filename}]T3-2022'!F{row}"
-            fecha=solution.get(cell_ref_fecha).values[cell_ref_fecha]
-            total=solution.get(cell_ref_total).values[cell_ref_total]
-            iva=solution.get(cell_ref_iva).values[cell_ref_iva]
+            fecha=get_cell_value(solution,filename,"T3-2022","A"+str(row))
+            total=get_cell_value(solution,filename,"T3-2022","E"+str(row))
+            iva=get_cell_value(solution,filename,"T3-2022","F"+str(row))
             for f in fecha:
                 if str(type(f))=="<class 'numpy.ndarray'>":
                     lista_compras.append(Compra(xldate_to_datetime(f[0][0]).strftime("%d/%m/%Y"), iva[-1][0][0], total[-1][0][0]))
@@ -67,14 +68,11 @@ def crear_objetos_venta():
     lista_ventas = []
     dir_path="Documentos/facturas/ventas"
     for file in os.listdir(dir_path): 
-        cell_ref_total=f"'[{file}]FACTURA'!F47"
-        cell_ref_fecha=f"'[{file}]FACTURA'!H3"
-        cell_ref_iva=f"'[{file}]FACTURA'!F48"
         xl_model=formulas.ExcelModel().loads(os.path.join(dir_path,file)).finish()
         solution=xl_model.calculate()
-        total=solution.get(cell_ref_total).values[cell_ref_total]
-        fecha=solution.get(cell_ref_fecha).values[cell_ref_fecha]
-        iva=solution.get(cell_ref_iva).values[cell_ref_iva]
+        total=get_cell_value(solution,file,"FACTURA","F47")
+        fecha=get_cell_value(solution,file,"FACTURA","H3")
+        iva=get_cell_value(solution,file,"FACTURA","F48")
         gasto_mes=total[-1][0][0]
         f=fecha[-1][0][0]
         i=iva[-1][0][0]
@@ -103,10 +101,9 @@ def process_gasto_nomina():
         gasto_mes=0
         mes=folder.split("-")[0]
         for path in os.listdir(dir_path): 
-            cell_ref=f"'[{path}]NOMINA2'!F54"
             xl_model=formulas.ExcelModel().loads(os.path.join(dir_path,path)).finish()
             solution=xl_model.calculate()
-            values=solution.get(cell_ref).values[cell_ref]
+            values=get_cell_value(solution,path,"NOMINA2","F54")
             gasto_mes+=values[-1][0][0]
         if(len(os.listdir(dir_path))>0):
             print(mes)

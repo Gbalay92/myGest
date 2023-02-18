@@ -5,6 +5,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import os
 
+
 def crear_nominas():
     original="Documentos/plantillas/nominas/nomina-11223344.xlsx"
     wb=op.load_workbook("Documentos/rrhh/empregados.xlsx")
@@ -30,4 +31,6 @@ def crear_nominas():
         ws['F15']=row[3].value
         ws['F11']=dict_categorias[row[1].value]
         wb.save(fichero)
+
+
 

@@ -16,6 +16,18 @@ dict_cell_gerencia = {1:"D",
                     10:"M",
                     11:"N",
                     12:"O",}
+dict_cell_iva =  {1:"C",
+                    2:"D",
+                    3:"E",
+                    4:"G",
+                    5:"H",
+                    6:"I",
+                    7:"K",
+                    8:"L",
+                    9:"M",
+                    10:"O",
+                    11:"P",
+                    12:"Q",}
 
 def process(nombre_fichero,header1,header2,header3,lista_a_procesar):
     filepath = "Documentos/facturas/"+nombre_fichero+".xlsx"
@@ -76,21 +88,20 @@ def xldate_to_datetime(xldate):
 	delta = timedelta(days=xldate)
 	return temp+delta
 
-def write_gerencia(cantidad, celda):
-    file="Documentos/gerencia/informe-xerencia.xlsx"
-    wb = op.load_workbook(file)
+def write_reports(cantidad, celda, filepath):
+    wb = op.load_workbook(filepath)
     ws=wb.active
     ws[f'{celda}']=cantidad
-    wb.save(file)
+    wb.save(filepath)
 
 def process_gasto_nomina():
-    dir="Documentos/nominas"
-    for folder in os.listdir(dir):
-        dir_path = os.path.join(dir,folder)
+    directory="Documentos/nominas"
+    for folder in os.listdir(directory):
+        dir_path = os.path.join(directory,folder)
         if(dir_path.endswith("xlsx")):
             return
         gasto_mes=0
-        mes, anho=folder.split("-")
+        mes=folder.split("-")[0]
         for path in os.listdir(dir_path): 
             cell_ref=f"'[{path}]NOMINA2'!F54"
             xl_model=formulas.ExcelModel().loads(os.path.join(dir_path,path)).finish()
@@ -99,10 +110,10 @@ def process_gasto_nomina():
             gasto_mes+=values[-1][0][0]
         if(len(os.listdir(dir_path))>0):
             print(mes)
-            write_gerencia(gasto_mes,dict_cell_gerencia.get(int(mes))+str(3))
+            write_reports(gasto_mes,dict_cell_gerencia.get(int(mes))+str(3), "Documentos/gerencia/informe-xerencia.xlsx")
             
-def process_report(filename, row_number):
-    wb=op.load_workbook(filename)
+def process_report(file_origin, row_number, file_destiny):
+    wb=op.load_workbook(file_origin)
     ws=wb.active
     previous_date=None
     total=0
@@ -110,7 +121,7 @@ def process_report(filename, row_number):
         total+=row[2].value
         date=datetime.strptime(row[0].value,"%d/%m/%Y").month
         if date != previous_date and previous_date != None:
-            write_gerencia(total, dict_cell_gerencia.get(date)+str(4))
+            write_reports(total, dict_cell_gerencia.get(date)+str(4), file_destiny)
         previous_date=date
-    write_gerencia(total, dict_cell_gerencia.get(date)+str(row_number))
+    write_reports(total, dict_cell_gerencia.get(date)+str(row_number), file_destiny)
         
